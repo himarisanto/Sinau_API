@@ -17,4 +17,10 @@ class Siswa extends Model
         'jurusan',
         'foto',
     ];
+    
+    public function gurus()
+    {
+        return $this->belongsToMany(Guru::class, 'guru_siswa');
+    }
+
 }
