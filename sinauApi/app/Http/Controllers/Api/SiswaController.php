@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Siswa;
-use Faker\Provider\Base;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -16,19 +15,16 @@ class SiswaController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'Status' => true,
-            'Massage' => 'List data Siswa',
-            'data'=> Siswa::all()
-        ], 200);
-    }
+        $siswas = Siswa::all()->map(function ($siswa) {
+            $siswa->foto_url = $siswa->foto ? asset('storage/images/' . $siswa->foto) : null;
+            return $siswa;
+        });
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'status' => true,
+            'message' => 'List Data Siswa',
+            'data' => $siswas
+        ], 200);
     }
 
     /**
@@ -36,10 +32,9 @@ class SiswaController extends Controller
      */
     public function store(Request $request)
     {
-        // dd('tes');
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
-            'nisn' => 'required|string',
+            'nisn' => 'required|string|unique:siswas,nisn',
             'no_absen' => 'required|string',
             'kelas' => 'required|string',
             'jurusan' => 'required|string',
@@ -53,10 +48,8 @@ class SiswaController extends Controller
             ], 400);
         }
 
-        if ($request->hasFile('foto')) {
-            $fotoPath = $request->file('foto')->store('images');
-            $fotoName = basename($fotoPath);
-        }
+        $fotoPath = $request->file('foto')->storePublicly('images', 'public');
+        $fotoName = basename($fotoPath);
 
         $siswa = Siswa::create([
             'nama' => $request->nama,
@@ -66,6 +59,7 @@ class SiswaController extends Controller
             'jurusan' => $request->jurusan,
             'foto' => $fotoName,
         ]);
+        $siswa->foto_url = asset('storage/images/' . $siswa->foto);
 
         return response()->json([
             'status' => true,
@@ -88,19 +82,13 @@ class SiswaController extends Controller
                 'message' => 'Siswa tidak ditemukan'
             ], 404);
         }
+        $siswa->foto_url = $siswa->foto ? asset('storage/images/' . $siswa->foto) : null;
 
         return response()->json([
             'status' => true,
             'message' => 'Detail Data Siswa',
             'data' => $siswa
         ], 200);
-    }
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -136,15 +124,16 @@ class SiswaController extends Controller
         $data = $request->only(['nama', 'nisn', 'no_absen', 'kelas', 'jurusan']);
 
         if ($request->hasFile('foto')) {
-            if ($siswa->foto && Storage::exists("images/{$siswa->foto}")) {
-                Storage::delete("images/{$siswa->foto}");
+            if ($siswa->foto && Storage::disk('public')->exists("images/{$siswa->foto}")) {
+                Storage::disk('public')->delete("images/{$siswa->foto}");
             }
 
-            $fotoPath = $request->file('foto')->store('images');
+            $fotoPath = $request->file('foto')->store('images', 'public');
             $data['foto'] = basename($fotoPath);
         }
 
         $siswa->update($data);
+        $siswa->foto_url = $siswa->foto ? asset('storage/images/' . $siswa->foto) : null;
 
         return response()->json([
             'status' => true,
@@ -161,19 +150,19 @@ class SiswaController extends Controller
 
         if (!$siswa) {
             return response()->json([
-                'status' => true,
-                'massage' => 'Siswa tidak di temukan'
-            ]);
+                'status' => false,
+                'message' => 'Siswa tidak ditemukan'
+            ], 404);
         }
-        if ($siswa->foto && Storage::exists("images/{$siswa->foto}")) {
-            Storage::delete("images/{$siswa->foto}");
+        if ($siswa->foto && Storage::disk('public')->exists("images/{$siswa->foto}")) {
+            Storage::disk('public')->delete("images/{$siswa->foto}");
         }
 
         $siswa->delete();
 
         return response()->json([
             'status' => true,
-            'massage' => 'Sukses Hapus data Siswa',
-        ]);
+            'message' => 'Sukses Hapus Data Siswa'
+        ], 200);
     }
 }
