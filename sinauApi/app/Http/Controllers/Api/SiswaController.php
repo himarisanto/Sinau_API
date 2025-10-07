@@ -39,6 +39,8 @@ class SiswaController extends Controller
             'kelas' => 'required|string',
             'jurusan' => 'required|string',
             'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'jenis_kelamiin'=> 'required',
+            'tanggal_lahir' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -58,6 +60,9 @@ class SiswaController extends Controller
             'kelas' => $request->kelas,
             'jurusan' => $request->jurusan,
             'foto' => $fotoName,
+            'jenis_kelamiin'=> $request->jenis_kelamiin,
+            'tanggal_lahir' => $request->tanggal_lahir,
+
         ]);
         $siswa->foto_url = asset('storage/images/' . $siswa->foto);
 
@@ -112,6 +117,9 @@ class SiswaController extends Controller
             'kelas' => 'sometimes|required|string',
             'jurusan' => 'sometimes|required|string',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'jenis_kelamiin'=> 'required',
+            'tanggal_lahir' => 'required',
+
         ]);
 
         if ($validator->fails()) {
@@ -121,7 +129,7 @@ class SiswaController extends Controller
             ], 400);
         }
 
-        $data = $request->only(['nama', 'nisn', 'no_absen', 'kelas', 'jurusan']);
+        $data = $request->only(['nama', 'nisn', 'no_absen', 'kelas', 'jurusan', 'jenis_kelamiin', 'tanggal_lahir']);
 
         if ($request->hasFile('foto')) {
             if ($siswa->foto && Storage::disk('public')->exists("images/{$siswa->foto}")) {

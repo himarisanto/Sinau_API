@@ -25,7 +25,7 @@ class GuruController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
-            'nip' => 'required|string|unique',
+            'nip' => 'required|string|unique:gurus,nip',
             'jenis_kelamin' => 'required|string',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
@@ -83,7 +83,7 @@ class GuruController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
-            'nip' => 'required|string|unique',
+            'nip' => 'required|string|unique:gurus,nip,' . $id,
             'jenis_kelamin' => 'required|string',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
