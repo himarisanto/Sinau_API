@@ -17,7 +17,7 @@ class Siswa extends Model
         'jurusan',
         'foto',
         'tanggal_lahir',
-        'jenis_kelamiin',
+        'jenis_kelamin',
     ];
     
     public function gurus()
