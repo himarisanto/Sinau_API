@@ -17,6 +17,7 @@ class Guru extends Model
 
     public function siswas()
     {
-        return $this->hasMany(Siswa::class);
+        return $this->belongsToMany(Siswa::class, 'guru_siswa', 'guru_id', 'siswa_id')
+                    ->withTimestamps();
     }
 }
