@@ -5,18 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Models\Guru;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\Validator;
 
 class GuruController extends Controller
 {
-    public function index() 
+    public function index()
     {
         $gurus = Guru::all();
 
         return response()->json([
             'status' => true,
-            'massage' => 'List Data Guru',
+            'message' => 'List Data Guru',
             'data' => $gurus,
         ], 200);
     }
@@ -34,40 +33,34 @@ class GuruController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'massage' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ], 400);
         }
 
-        $guru = Guru::create([
-            'nama' => $request->nama,
-            'nip' => $request->nip,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'alamat' => $request->alamat,
-            'tanggal_lahir' => $request->tanggal_lahir,
-        ]);
+        $guru = Guru::create($request->all());
 
         return response()->json([
             'status' => true,
-            'massage' => 'Sekses tambah data Guru',
+            'message' => 'Sukses tambah data guru',
             'data' => $guru,
-        ]);
+        ], 200);
     }
 
-    public function show(string $id) 
+    public function show(string $id)
     {
-        $guru = Guru::find($id);
+        $guru = Guru::with('siswas')->find($id);
 
         if (!$guru) {
             return response()->json([
                 'status' => false,
-                'massage' => 'Guru tidak ditemukan',
-            ], 400);
+                'message' => 'Guru tidak ditemukan',
+            ], 404);
         }
 
         return response()->json([
             'status' => true,
-            'massage' => 'Detail data Guru',
-            'data' => $guru
+            'message' => 'Detail Data Guru',
+            'data' => $guru,
         ], 200);
     }
 
@@ -77,8 +70,8 @@ class GuruController extends Controller
         if (!$guru) {
             return response()->json([
                 'status' => false,
-                'massage' => 'Guru tidak di temukan'
-            ], 400);
+                'message' => 'Guru tidak ditemukan',
+            ], 404);
         }
 
         $validator = Validator::make($request->all(), [
@@ -92,39 +85,34 @@ class GuruController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'massage' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ], 400);
         }
-        $guru->update($request->only([
-            'nama',
-            'nip',
-            'jenis_kelamin',
-            'alamat',
-            'tanggal_lahir',
-        ]));
+
+        $guru->update($request->all());
 
         return response()->json([
             'status' => true,
-            'massage' => 'Sukses Update Data Guru',
-            'data' => $guru
+            'message' => 'Sukses update data guru',
+            'data' => $guru,
         ], 200);
     }
 
-    public function destroy(string $id) 
+    public function destroy(string $id)
     {
         $guru = Guru::find($id);
-
         if (!$guru) {
             return response()->json([
                 'status' => false,
-                'massage' => 'Guru tidak ditemukan',
-            ], 400);
+                'message' => 'Guru tidak ditemukan',
+            ], 404);
         }
+
         $guru->delete();
 
         return response()->json([
             'status' => true,
-            'massage' => 'Sukses Hapus data Guru'
+            'message' => 'Sukses hapus data guru',
         ], 200);
     }
 }

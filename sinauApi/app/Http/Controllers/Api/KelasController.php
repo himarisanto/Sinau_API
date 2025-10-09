@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Siswa;
 use App\Models\KelasModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use GuzzleHttp\Promise\Create;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\Validator;
-use PhpParser\Node\Expr\FuncCall;
-use Symfony\Component\Console\Helper\TreeNode;
 
 class KelasController extends Controller
 {
@@ -19,10 +14,11 @@ class KelasController extends Controller
         $kelas = KelasModel::all();
         return response()->json([
             'status' => true,
-            'massage' => 'Data kelas',
-            'data' => $kelas
+            'message' => 'Data kelas',
+            'data' => $kelas,
         ], 200);
     }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -32,20 +28,21 @@ class KelasController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'massage' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ], 400);
         }
 
         $kelas = KelasModel::create([
             'nama_kelas' => $request->nama_kelas,
         ]);
+
         return response()->json([
             'status' => true,
-            'massage' => 'Data kelas',
-            'data' => $kelas
-        ],  200);
+            'message' => 'Data kelas berhasil ditambahkan',
+            'data' => $kelas,
+        ], 200);
     }
-    
+
     public function show(string $id)
     {
         $kelas = KelasModel::find($id);
@@ -53,14 +50,14 @@ class KelasController extends Controller
         if (!$kelas) {
             return response()->json([
                 'status' => false,
-                'massage' => 'Kelas tidak ditemukan',
-            ], 400);
+                'message' => 'Kelas tidak ditemukan',
+            ], 404);
         }
 
         return response()->json([
             'status' => true,
-            'massage' => 'Detail kelas',
-            'data' => $kelas
+            'message' => 'Detail kelas',
+            'data' => $kelas,
         ], 200);
     }
 
@@ -70,45 +67,45 @@ class KelasController extends Controller
         if (!$kelas) {
             return response()->json([
                 'status' => false,
-                'massage' => 'kelas tidak di temukan'
-            ], 400);
+                'message' => 'Kelas tidak ditemukan',
+            ], 404);
         }
 
         $validator = Validator::make($request->all(), [
-            'nama_kelas' => 'required',
+            'nama_kelas' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'massage' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ], 400);
         }
-        $data = $request->only(['nama_kelas']);
-        $kelas->update($data);
+
+        $kelas->update(['nama_kelas' => $request->nama_kelas]);
 
         return response()->json([
             'status' => true,
-            'massage' => 'Sukses Update kelas',
-            'data' => $kelas
+            'message' => 'Sukses update kelas',
+            'data' => $kelas,
         ], 200);
     }
+
     public function destroy(string $id)
     {
         $kelas = KelasModel::find($id);
-
         if (!$kelas) {
             return response()->json([
                 'status' => false,
-                'message' => 'kelas tidak ditemukan'
+                'message' => 'Kelas tidak ditemukan',
             ], 404);
         }
 
         $kelas->delete();
+
         return response()->json([
             'status' => true,
-            'message' => 'Sukses Hapus Data Siswa'
+            'message' => 'Sukses hapus data kelas',
         ], 200);
-
     }
 }

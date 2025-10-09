@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class SiswaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $siswas = Siswa::all()->map(function ($siswa) {
@@ -23,82 +20,82 @@ class SiswaController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'List Data Siswa',
-            'data' => $siswas
+            'data' => $siswas,
         ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
             'nisn' => 'required|string|unique:siswas,nisn',
             'no_absen' => 'required|string',
-            'kelas' => 'required|string',
+            'kelas_id' => 'required|exists:kelas_models,id', 
             'jurusan' => 'required|string',
-            'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'jenis_kelamin'=> 'required',
-            'tanggal_lahir' => 'required',
+            'tanggal_lahir' => 'required|date',
+            'guru_ids' => 'array',
+            'guru_ids.*' => 'exists:gurus,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ], 400);
         }
 
-        $fotoPath = $request->file('foto')->storePublicly('images', 'public');
-        $fotoName = basename($fotoPath);
+        $fotoName = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('images', 'public');
+            $fotoName = basename($fotoPath);
+        }
 
         $siswa = Siswa::create([
             'nama' => $request->nama,
             'nisn' => $request->nisn,
             'no_absen' => $request->no_absen,
-            'kelas' => $request->kelas,
+            'kelas_id' => $request->kelas_id, 
             'jurusan' => $request->jurusan,
             'foto' => $fotoName,
             'jenis_kelamin'=> $request->jenis_kelamin,
             'tanggal_lahir' => $request->tanggal_lahir,
-
         ]);
-        $siswa->foto_url = asset('storage/images/' . $siswa->foto);
+
+        if ($request->has('guru_ids')) {
+            $siswa->gurus()->attach($request->guru_ids);
+        }
+
+        $siswa->foto_url = $siswa->foto ? asset('storage/images/' . $siswa->foto) : null;
 
         return response()->json([
             'status' => true,
             'message' => 'Sukses Tambah Data Siswa',
-            'data' => $siswa
+            'data' => $siswa->load('gurus'),
         ], 200);
     }
 
-
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $siswa = Siswa::find($id);
+        $siswa = Siswa::with('gurus')->find($id);
 
         if (!$siswa) {
             return response()->json([
                 'status' => false,
-                'message' => 'Siswa tidak ditemukan'
+                'message' => 'Siswa tidak ditemukan',
             ], 404);
         }
+
         $siswa->foto_url = $siswa->foto ? asset('storage/images/' . $siswa->foto) : null;
 
         return response()->json([
             'status' => true,
             'message' => 'Detail Data Siswa',
-            'data' => $siswa
+            'data' => $siswa,
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $siswa = Siswa::find($id);
@@ -106,7 +103,7 @@ class SiswaController extends Controller
         if (!$siswa) {
             return response()->json([
                 'status' => false,
-                'message' => 'Siswa tidak ditemukan'
+                'message' => 'Siswa tidak ditemukan',
             ], 404);
         }
 
@@ -117,15 +114,16 @@ class SiswaController extends Controller
             'kelas' => 'sometimes|required|string',
             'jurusan' => 'sometimes|required|string',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'jenis_kelamin'=> 'required',
-            'tanggal_lahir' => 'required',
-
+            'jenis_kelamin'=> 'sometimes|required',
+            'tanggal_lahir' => 'sometimes|required|date',
+            'guru_ids' => 'array',
+            'guru_ids.*' => 'exists:gurus,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ], 400);
         }
 
@@ -141,17 +139,20 @@ class SiswaController extends Controller
         }
 
         $siswa->update($data);
+
+        if ($request->has('guru_ids')) {
+            $siswa->gurus()->sync($request->guru_ids);
+        }
+
         $siswa->foto_url = $siswa->foto ? asset('storage/images/' . $siswa->foto) : null;
 
         return response()->json([
             'status' => true,
             'message' => 'Sukses Update Data Siswa',
-            'data' => $siswa
+            'data' => $siswa->load('gurus'),
         ], 200);
     }
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
         $siswa = Siswa::find($id);
@@ -159,18 +160,20 @@ class SiswaController extends Controller
         if (!$siswa) {
             return response()->json([
                 'status' => false,
-                'message' => 'Siswa tidak ditemukan'
+                'message' => 'Siswa tidak ditemukan',
             ], 404);
         }
+
         if ($siswa->foto && Storage::disk('public')->exists("images/{$siswa->foto}")) {
             Storage::disk('public')->delete("images/{$siswa->foto}");
         }
 
+        $siswa->gurus()->detach();
         $siswa->delete();
 
         return response()->json([
             'status' => true,
-            'message' => 'Sukses Hapus Data Siswa'
+            'message' => 'Sukses Hapus Data Siswa',
         ], 200);
     }
 }
