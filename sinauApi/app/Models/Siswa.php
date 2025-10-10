@@ -4,11 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Siswa extends Model
 {
     use HasFactory;
 
+    protected $table = 'siswas';
+    
     protected $fillable = [
         'nama',
         'nisn',
@@ -20,14 +24,22 @@ class Siswa extends Model
         'jenis_kelamin',
     ];
 
-    public function gurus()
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
+
+    public function gurus(): BelongsToMany
     {
         return $this->belongsToMany(Guru::class, 'guru_siswa', 'siswa_id', 'guru_id')
                     ->withTimestamps();
     }
 
-    public function kelas()
+    public function kelas(): BelongsTo
     {
         return $this->belongsTo(KelasModel::class, 'kelas_id');
+    }
+    public function getFotoUrlAttribute()
+    {
+        return $this->foto ? asset('storage/images/' . $this->foto) : null;
     }
 }

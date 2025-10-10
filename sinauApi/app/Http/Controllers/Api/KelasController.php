@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Kelas;
 use App\Models\KelasModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -11,10 +12,11 @@ class KelasController extends Controller
 {
     public function index()
     {
-        $kelas = KelasModel::all();
+        $kelas = KelasModel::withCount('siswas')->get();
+
         return response()->json([
-            'status' => true,
-            'message' => 'Data kelas',
+            'success' => true,
+            'message' => 'Data kelas berhasil diambil',
             'data' => $kelas,
         ], 200);
     }
@@ -22,14 +24,15 @@ class KelasController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama_kelas' => 'required|string',
+            'nama_kelas' => 'required|string|max:50|unique:kelas,nama_kelas',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
-                'message' => $validator->errors()->first(),
-            ], 400);
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
         $kelas = KelasModel::create([
@@ -37,75 +40,86 @@ class KelasController extends Controller
         ]);
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => 'Data kelas berhasil ditambahkan',
             'data' => $kelas,
-        ], 200);
+        ], 201);
     }
 
-    public function show(string $id)
+    public function show($id)
     {
-        $kelas = KelasModel::find($id);
+        $kelas = KelasModel::with('siswas')->find($id);
 
         if (!$kelas) {
             return response()->json([
-                'status' => false,
-                'message' => 'Kelas tidak ditemukan',
+                'success' => false,
+                'message' => 'Data kelas tidak ditemukan',
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Detail kelas',
+            'success' => true,
+            'message' => 'Detail data kelas',
             'data' => $kelas,
         ], 200);
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         $kelas = KelasModel::find($id);
         if (!$kelas) {
             return response()->json([
-                'status' => false,
-                'message' => 'Kelas tidak ditemukan',
+                'success' => false,
+                'message' => 'Data kelas tidak ditemukan',
             ], 404);
         }
 
         $validator = Validator::make($request->all(), [
-            'nama_kelas' => 'required|string',
+            'nama_kelas' => 'required|string|max:50|unique:kelas,nama_kelas,' . $id,
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
-                'message' => $validator->errors()->first(),
-            ], 400);
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
-        $kelas->update(['nama_kelas' => $request->nama_kelas]);
+        $kelas->update([
+            'nama_kelas' => $request->nama_kelas,
+        ]);
 
         return response()->json([
-            'status' => true,
-            'message' => 'Sukses update kelas',
+            'success' => true,
+            'message' => 'Data kelas berhasil diperbarui',
             'data' => $kelas,
         ], 200);
     }
 
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $kelas = KelasModel::find($id);
+        $kelas = KelasModel::withCount('siswas')->find($id);
+        
         if (!$kelas) {
             return response()->json([
-                'status' => false,
-                'message' => 'Kelas tidak ditemukan',
+                'success' => false,
+                'message' => 'Data kelas tidak ditemukan',
             ], 404);
+        }
+
+        if ($kelas->siswas_count > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat menghapus kelas yang masih memiliki siswa',
+            ], 422);
         }
 
         $kelas->delete();
 
         return response()->json([
-            'status' => true,
-            'message' => 'Sukses hapus data kelas',
+            'success' => true,
+            'message' => 'Data kelas berhasil dihapus',
         ], 200);
     }
 }

@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Guru extends Model
 {
+    protected $table = 'gurus';
+
     protected $fillable = [
         'nama', 
         'nip',
@@ -15,7 +18,11 @@ class Guru extends Model
         'mata_pelajaran'
     ];
 
-    public function siswas()
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
+
+    public function siswas(): BelongsToMany
     {
         return $this->belongsToMany(Siswa::class, 'guru_siswa', 'guru_id', 'siswa_id')
                     ->withTimestamps();

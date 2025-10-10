@@ -11,11 +11,11 @@ class GuruController extends Controller
 {
     public function index()
     {
-        $gurus = Guru::with('siswas')->get();
+        $gurus = Guru::withCount('siswas')->get();
 
         return response()->json([
-            'status' => true,
-            'message' => 'List Data Guru',
+            'success' => true,
+            'message' => 'Data guru berhasil diambil',
             'data' => $gurus,
         ], 200);
     }
@@ -23,96 +23,105 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama' => 'required|string',
+            'nama' => 'required|string|max:255',
             'nip' => 'required|string|unique:gurus,nip',
-            'jenis_kelamin' => 'required|string',
+            'jenis_kelamin' => 'required|in:L,P',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
+            'mata_pelajaran' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
-                'message' => $validator->errors()->first(),
-            ], 400);
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
         $guru = Guru::create($request->all());
 
         return response()->json([
-            'status' => true,
-            'message' => 'Sukses tambah data guru',
+            'success' => true,
+            'message' => 'Data guru berhasil ditambahkan',
             'data' => $guru,
-        ], 200);
+        ], 201);
     }
 
-    public function show(string $id)
+    public function show($id)
     {
         $guru = Guru::with('siswas')->find($id);
 
         if (!$guru) {
             return response()->json([
-                'status' => false,
-                'message' => 'Guru tidak ditemukan',
+                'success' => false,
+                'message' => 'Data guru tidak ditemukan',
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Detail Data Guru',
+            'success' => true,
+            'message' => 'Detail data guru',
             'data' => $guru,
         ], 200);
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         $guru = Guru::find($id);
         if (!$guru) {
             return response()->json([
-                'status' => false,
-                'message' => 'Guru tidak ditemukan',
+                'success' => false,
+                'message' => 'Data guru tidak ditemukan',
             ], 404);
         }
 
         $validator = Validator::make($request->all(), [
-            'nama' => 'required|string',
+            'nama' => 'required|string|max:255',
             'nip' => 'required|string|unique:gurus,nip,' . $id,
-            'jenis_kelamin' => 'required|string',
+            'jenis_kelamin' => 'required|in:L,P',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
+            'mata_pelajaran' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => false,
-                'message' => $validator->errors()->first(),
-            ], 400);
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
         $guru->update($request->all());
 
         return response()->json([
-            'status' => true,
-            'message' => 'Sukses update data guru',
+            'success' => true,
+            'message' => 'Data guru berhasil diperbarui',
             'data' => $guru,
         ], 200);
     }
 
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $guru = Guru::find($id);
+        $guru = Guru::withCount('siswas')->find($id);
+        
         if (!$guru) {
             return response()->json([
-                'status' => false,
-                'message' => 'Guru tidak ditemukan',
+                'success' => false,
+                'message' => 'Data guru tidak ditemukan',
             ], 404);
+        }
+
+        if ($guru->siswas_count > 0) {
+            $guru->siswas()->detach();
         }
 
         $guru->delete();
 
         return response()->json([
-            'status' => true,
-            'message' => 'Sukses hapus data guru',
+            'success' => true,
+            'message' => 'Data guru berhasil dihapus',
         ], 200);
     }
 }
