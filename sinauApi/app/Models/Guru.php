@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Guru extends Model
 {
     protected $table = 'gurus';
+    protected $hidden = ['pivot'];
 
     protected $fillable = [
         'nama', 
@@ -15,7 +16,7 @@ class Guru extends Model
         'jenis_kelamin', 
         'alamat', 
         'tanggal_lahir', 
-        'mata_pelajaran'
+        // 'mata_pelajaran'
     ];
 
     protected $casts = [
@@ -24,7 +25,11 @@ class Guru extends Model
 
     public function siswas(): BelongsToMany
     {
-        return $this->belongsToMany(Siswa::class, 'guru_siswa', 'guru_id', 'siswa_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(Siswa::class, 'guru_siswa', 'guru_id', 'siswa_id');
+    }
+
+    public function matapelajarans(): BelongsToMany
+    {
+        return $this->belongsToMany(Matapelajaran::class, 'guru_matapelajaran', 'guru_id', 'matapelajaran_id');
     }
 }

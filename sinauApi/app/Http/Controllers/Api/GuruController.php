@@ -11,12 +11,7 @@ class GuruController extends Controller
 {
     public function index()
     {
-        $gurus = Guru::with(['siswas'])->get();
-
-        $gurus->each(function ($gurus) {
-            $gurus->siswas->makeHidden('pivot');
-        });
-
+        $gurus = Guru::with(['siswas', 'matapelajarans:id,nama_matapelajaran'])->get();
 
         return response()->json([
             'success' => true,
@@ -33,7 +28,10 @@ class GuruController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
-            'mata_pelajaran' => 'nullable|string|max:255',
+            'matapelajaran_ids' => 'nullable|array',
+            'matapelajaran_ids.*' => 'integer|exists:matapelajarans,id',
+
+            // 'mata_pelajaran' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -45,6 +43,10 @@ class GuruController extends Controller
         }
 
         $guru = Guru::create($request->all());
+        
+        if ($request->has('matapelajaran_ids')) {
+            $guru->matapelajarans()->sync($request->matapelajaran_ids);
+        }
 
         return response()->json([
             'success' => true,
@@ -87,7 +89,9 @@ class GuruController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
-            'mata_pelajaran' => 'nullable|string|max:255',
+            'matapelajaran_ids' => 'nullable|array',
+            'matapelajaran_ids.*' => 'integer|exists:matapelajarans,id',
+            // 'mata_pelajaran' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {

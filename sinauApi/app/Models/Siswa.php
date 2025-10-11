@@ -11,6 +11,8 @@ class Siswa extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['pivot'];
+
     protected $table = 'siswas';
     
     protected $fillable = [
