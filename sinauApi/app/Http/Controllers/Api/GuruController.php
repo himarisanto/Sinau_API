@@ -11,7 +11,12 @@ class GuruController extends Controller
 {
     public function index()
     {
-        $gurus = Guru::withCount('siswas')->get();
+        $gurus = Guru::with(['siswas'])->get();
+
+        $gurus->each(function ($gurus) {
+            $gurus->siswas->makeHidden('pivot');
+        });
+
 
         return response()->json([
             'success' => true,
