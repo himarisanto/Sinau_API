@@ -12,7 +12,7 @@ class MatapelajaranContoller extends Controller
 {
     public function index()
     {
-        $mapel = Matapelajaran::with('gurus')->get();
+        $mapel = Matapelajaran::with('gurus:id,nama')->get();
 
         return response()->json([
             'status' => true,

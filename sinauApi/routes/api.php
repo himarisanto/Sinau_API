@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GuruController;
 use App\Http\Controllers\Api\KelasController;
 use App\Http\Controllers\Api\SiswaController;
+use App\Http\Controllers\Api\MateriController;
 use App\Http\Controllers\Api\MatapelajaranContoller;
 
 Route::get('/user', function (Request $request) {
@@ -34,5 +35,12 @@ Route::get('/matapelajaran/{id}', [MatapelajaranContoller::class, 'show']);
 Route::post('/matapelajaran', [MatapelajaranContoller::class, 'store']);
 Route::post('/matapelajaran/{id}', [MatapelajaranContoller::class, 'update']);
 Route::delete('/matapelajaran/{id}', [MatapelajaranContoller::class, 'destroy']);
-Route::post('/matapelajaran/{id}/attach-guru', [MatapelajaranContoller::class, 'attachGuru']);
-Route::post('/matapelajaran/{id}/detach-guru', [MatapelajaranContoller::class, 'detachGuru']);
+
+Route::prefix('materi')->group(function () {
+    Route::get('/', [MateriController::class, 'index']);        
+    Route::get('/{id}', [MateriController::class, 'show']);      
+    Route::post('/', [MateriController::class, 'store']);        
+    Route::put('/{id}', [MateriController::class, 'update']);
+    Route::delete('/{id}', [MateriController::class, 'destroy']);
+});
+

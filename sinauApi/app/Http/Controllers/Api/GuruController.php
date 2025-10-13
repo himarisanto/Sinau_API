@@ -43,9 +43,11 @@ class GuruController extends Controller
         }
 
         $guru = Guru::create($request->all());
-        
         if ($request->has('matapelajaran_ids')) {
             $guru->matapelajarans()->sync($request->matapelajaran_ids);
+        }
+        if ($request->has('materi_ids')) {
+            $guru->materis()->sync($request->materi_ids);
         }
 
         return response()->json([
@@ -114,7 +116,7 @@ class GuruController extends Controller
     public function destroy($id)
     {
         $guru = Guru::withCount('siswas')->find($id);
-        
+
         if (!$guru) {
             return response()->json([
                 'success' => false,

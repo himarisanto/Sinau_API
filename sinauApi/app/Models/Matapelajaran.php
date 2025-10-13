@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Materi;
 
 class Matapelajaran extends Model
 {
@@ -19,6 +21,11 @@ class Matapelajaran extends Model
     {
         return $this->belongsToMany(Guru::class, 'guru_matapelajaran', 'matapelajaran_id', 'guru_id')
                     ->withTimestamps();
+    }
+
+    public function materis(): HasMany
+    {
+        return $this->hasMany(Materi::class, 'id_matapelajaran');
     }
 
 }
