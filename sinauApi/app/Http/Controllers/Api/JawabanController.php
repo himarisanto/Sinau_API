@@ -3,58 +3,146 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Jawaban;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class JawabanController extends Controller
 {
     public function index()
     {
-        return Jawaban::with(['tugas', 'siswa'])->get();
+        $jawabans = Jawaban::with([
+            'tugas:id,judul',
+            'siswa:id,nama',
+        ])->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'List Data Jawaban',
+            'data' => $jawabans,
+        ], 200);
     }
 
     public function show($id)
     {
-        return Jawaban::with(['tugas', 'siswa'])->findOrFail($id);
+        $jawaban = Jawaban::with([
+            'tugas:id,judul',
+            'siswa:id,nama',
+        ])->find($id);
+
+        if (!$jawaban) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jawaban tidak ditemukan',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail Jawaban',
+            'data' => $jawaban,
+        ], 200);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'tugas_id' => 'required|exists:tugas,id',
             'siswa_id' => 'required|exists:siswas,id',
             'isi' => 'nullable|string',
             'file' => 'nullable|string',
-            'nilai' => 'nullable|integer',
+            'nilai' => 'nullable|integer|min:0|max:100',
             'komentar' => 'nullable|string',
         ]);
 
-        $jawaban = Jawaban::create($data);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi Gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        return response($jawaban, 201);
+        try {
+            $jawaban = Jawaban::create($request->only([
+                'tugas_id',
+                'siswa_id',
+                'isi',
+                'file',
+                'nilai',
+                'komentar',
+            ]));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jawaban berhasil ditambahkan',
+                'data' => $jawaban,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $jawaban = Jawaban::findOrFail($id);
+        $jawaban = Jawaban::find($id);
 
-        $data = $request->validate([
+        if (!$jawaban) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jawaban tidak ditemukan',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
             'isi' => 'nullable|string',
             'file' => 'nullable|string',
-            'nilai' => 'nullable|integer',
+            'nilai' => 'nullable|integer|min:0|max:100',
             'komentar' => 'nullable|string',
         ]);
 
-        $jawaban->update($data);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi Gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        return $jawaban;
+        $jawaban->update($request->only([
+            'isi',
+            'file',
+            'nilai',
+            'komentar',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jawaban berhasil diperbarui',
+            'data' => $jawaban,
+        ], 200);
     }
 
     public function destroy($id)
     {
-        $jawaban = Jawaban::findOrFail($id);
+        $jawaban = Jawaban::find($id);
+
+        if (!$jawaban) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jawaban tidak ditemukan',
+            ], 404);
+        }
+
         $jawaban->delete();
 
-        return response()->json(['message' => 'deleted']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Jawaban berhasil dihapus',
+        ], 200);
     }
 }

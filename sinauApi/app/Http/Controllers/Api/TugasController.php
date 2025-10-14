@@ -3,58 +3,140 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Tugas;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TugasController extends Controller
 {
     public function index()
     {
-        return Tugas::with(['guru', 'kelas'])->get();
+        $tugas = Tugas::with(['guru:id,nama', 'kelas:id,nama_kelas'])->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'List Data Tugas',
+            'data' => $tugas,
+        ], 200);
     }
 
     public function show($id)
     {
-        return Tugas::with(['guru', 'kelas'])->findOrFail($id);
+        $tugas = Tugas::with(['guru:id,nama', 'kelas:id,nama_kelas'])->find($id);
+
+        if (!$tugas) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tugas tidak ditemukan',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail Tugas',
+            'data' => $tugas,
+        ], 200);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'judul' => 'required|string',
+        $validator = Validator::make($request->all(), [
+            'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'status' => 'required|string',
+            'status' => 'required|string|in:aktif,nonaktif',
             'guru_id' => 'nullable|exists:gurus,id',
             'kelas_id' => 'nullable|exists:kelas_models,id',
         ]);
 
-        $tugas = Tugas::create($data);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi Gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        return response($tugas, 201);
+        try {
+            $tugas = Tugas::create($request->only([
+                'judul',
+                'deskripsi',
+                'status',
+                'guru_id',
+                'kelas_id',
+            ]));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tugas berhasil ditambahkan',
+                'data' => $tugas,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $tugas = Tugas::findOrFail($id);
+        $tugas = Tugas::find($id);
 
-        $data = $request->validate([
-            'judul' => 'sometimes|required|string',
+        if (!$tugas) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tugas tidak ditemukan',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'status' => 'sometimes|required|string',
+            'status' => 'required|string|in:aktif,nonaktif',
             'guru_id' => 'nullable|exists:gurus,id',
             'kelas_id' => 'nullable|exists:kelas_models,id',
         ]);
 
-        $tugas->update($data);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi Gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        return $tugas;
+        $tugas->update($request->only([
+            'judul',
+            'deskripsi',
+            'status',
+            'guru_id',
+            'kelas_id',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tugas berhasil diperbarui',
+            'data' => $tugas,
+        ], 200);
     }
 
     public function destroy($id)
     {
-        $tugas = Tugas::findOrFail($id);
+        $tugas = Tugas::find($id);
+
+        if (!$tugas) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tugas tidak ditemukan',
+            ], 404);
+        }
+
         $tugas->delete();
 
-        return response()->json(['message' => 'deleted']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Tugas berhasil dihapus',
+        ], 200);
     }
 }
