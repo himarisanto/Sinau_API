@@ -47,5 +47,15 @@ class Guru extends Model
         return $this->belongsToMany(Matapelajaran::class, 'guru_matapelajaran', 'guru_id', 'matapelajaran_id')
             ->withTimestamps();
     }
-    
+    public function materiDariMapel()
+    {
+        return $this->hasManyThrough(
+            \App\Models\Materi::class,
+            \App\Models\Matapelajaran::class,
+            'id',
+            'id_matapelajaran',
+            'id',
+            'id'
+        );
+    }
 }

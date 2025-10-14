@@ -11,7 +11,14 @@ class GuruController extends Controller
 {
     public function index()
     {
-        $gurus = Guru::with(['siswas', 'matapelajarans:id,nama_matapelajaran'])->get();
+        $gurus = Guru::with([
+            'siswas',
+            'matapelajarans' => function ($query) {
+                $query->select('matapelajarans.id', 'matapelajarans.nama_matapelajaran')
+                    ->with(['materis:id,judul,deskripsi,id_matapelajaran']);
+            },
+            
+        ])->get();
 
         return response()->json([
             'success' => true,
