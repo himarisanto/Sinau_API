@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GuruController;
 use App\Http\Controllers\Api\KelasController;
 use App\Http\Controllers\Api\SiswaController;
+use App\Http\Controllers\Api\TugasController;
 use App\Http\Controllers\Api\MateriController;
+use App\Http\Controllers\Api\JawabanController;
 use App\Http\Controllers\Api\MatapelajaranContoller;
 
 Route::get('/user', function (Request $request) {
@@ -43,4 +45,16 @@ Route::prefix('materi')->group(function () {
     Route::put('/{id}', [MateriController::class, 'update']);
     Route::delete('/{id}', [MateriController::class, 'destroy']);
 });
+
+Route::get('/tugas', [TugasController::class, 'index']);
+Route::get('/tugas/{id}', [TugasController::class, 'show']);
+Route::post('/tugas', [TugasController::class, 'store']);
+Route::put('/tugas/{id}', [TugasController::class, 'update']);
+Route::delete('/tugas/{id}', [TugasController::class, 'destroy']);
+
+Route::get('/jawaban', [JawabanController::class, 'index']);
+Route::get('/jawaban/{id}', [JawabanController::class, 'show']);
+Route::post('/jawaban', [JawabanController::class, 'store']);
+Route::put('/jawaban/{id}', [JawabanController::class, 'update']);
+Route::delete('/jawaban/{id}', [JawabanController::class, 'destroy']);
 
