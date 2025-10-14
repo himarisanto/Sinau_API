@@ -21,7 +21,7 @@ Route::delete('/siswa/{id}', [SiswaController::class, 'destroy']);
 Route::get('/guru', [GuruController::class, 'index']);
 Route::get('/guru/{id}', [GuruController::class, 'show']);
 Route::post('/guru', [GuruController::class, 'store']);
-Route::post('/guru/{id}', [GuruController::class, 'update']);
+Route::put('/guru/{id}', [GuruController::class, 'update']);
 Route::delete('/guru/{id}', [GuruController::class, 'destroy']);
 
 Route::get('/kelas', [KelasController::class, 'index']);      
@@ -33,7 +33,7 @@ Route::delete('/kelas/{id}', [KelasController::class, 'destroy']);
 Route::get('/matapelajaran', [MatapelajaranContoller::class, 'index']);
 Route::get('/matapelajaran/{id}', [MatapelajaranContoller::class, 'show']);
 Route::post('/matapelajaran', [MatapelajaranContoller::class, 'store']);
-Route::post('/matapelajaran/{id}', [MatapelajaranContoller::class, 'update']);
+Route::put('/matapelajaran/{id}', [MatapelajaranContoller::class, 'update']);
 Route::delete('/matapelajaran/{id}', [MatapelajaranContoller::class, 'destroy']);
 
 Route::prefix('materi')->group(function () {

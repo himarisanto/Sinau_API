@@ -17,6 +17,8 @@ class Guru extends Model
         'jenis_kelamin',
         'alamat',
         'tanggal_lahir',
+        'kelas_id',
+        // 'jurusan',
     ];
 
     public function siswas(): BelongsToMany
@@ -57,5 +59,9 @@ class Guru extends Model
             'id',
             'id'
         );
+    }
+    public function materis()
+    {
+        return $this->belongsToMany(Materi::class, 'guru_materi', 'guru_id', 'materi_id');
     }
 }

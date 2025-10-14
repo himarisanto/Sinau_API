@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Guru;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -12,13 +13,22 @@ class GuruController extends Controller
     public function index()
     {
         $gurus = Guru::with([
-            'siswas',
             'matapelajarans' => function ($query) {
                 $query->select('matapelajarans.id', 'matapelajarans.nama_matapelajaran')
                     ->with(['materis:id,judul,deskripsi,id_matapelajaran']);
             },
-            
         ])->get();
+
+        $gurus->map(function ($guru) {
+            if ($guru->kelas_id ) {
+                $guru->siswas = Siswa::with('kelas:id,nama_kelas')
+                    ->where('kelas_id', $guru->kelas_id)
+                    ->get(['id', 'nama', 'nisn', 'kelas_id', 'jurusan', 'jenis_kelamin', 'tanggal_lahir']);
+            } else {
+                $guru->siswas = collect();
+            }
+            return $guru;
+        });
 
         return response()->json([
             'success' => true,
@@ -35,6 +45,8 @@ class GuruController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
+            'kelas_id' => 'required|integer|exists:kelas_models,id',
+            // 'jurusan' => 'required|string|max:255',
             'matapelajaran_ids' => 'nullable|array',
             'matapelajaran_ids.*' => 'integer|exists:matapelajarans,id',
 
@@ -98,6 +110,8 @@ class GuruController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'alamat' => 'required|string',
             'tanggal_lahir' => 'required|date',
+            'kelas_id' => 'required|integer|exists:kelas_models,id',
+            // 'jurusan' => 'required|string|max:255',
             'matapelajaran_ids' => 'nullable|array',
             'matapelajaran_ids.*' => 'integer|exists:matapelajarans,id',
             // 'mata_pelajaran' => 'nullable|string|max:255',
