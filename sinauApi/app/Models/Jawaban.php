@@ -18,7 +18,6 @@ class Jawaban extends Model
         'isi',
         'file',
         'nilai',
-        'komentar',
     ];
 
     /**

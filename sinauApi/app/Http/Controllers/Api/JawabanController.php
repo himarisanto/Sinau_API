@@ -52,7 +52,6 @@ class JawabanController extends Controller
             'isi' => 'nullable|string',
             'file' => 'nullable|string',
             'nilai' => 'nullable|integer|min:0|max:100',
-            'komentar' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -70,7 +69,6 @@ class JawabanController extends Controller
                 'isi',
                 'file',
                 'nilai',
-                'komentar',
             ]));
 
             return response()->json([
@@ -102,7 +100,6 @@ class JawabanController extends Controller
             'isi' => 'nullable|string',
             'file' => 'nullable|string',
             'nilai' => 'nullable|integer|min:0|max:100',
-            'komentar' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -117,7 +114,6 @@ class JawabanController extends Controller
             'isi',
             'file',
             'nilai',
-            'komentar',
         ]));
 
         return response()->json([

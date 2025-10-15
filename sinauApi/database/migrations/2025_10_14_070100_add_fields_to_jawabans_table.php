@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('isi')->nullable()->after('siswa_id');
             $table->string('file')->nullable()->after('isi');
             $table->integer('nilai')->nullable()->after('file');
-            $table->text('komentar')->nullable()->after('nilai');
         });
     }
 
@@ -31,7 +30,7 @@ return new class extends Migration
             $table->dropColumn('tugas_id');
             $table->dropForeign(['siswa_id']);
             $table->dropColumn('siswa_id');
-            $table->dropColumn(['isi', 'file', 'nilai', 'komentar']);
+            $table->dropColumn(['isi', 'file', 'nilai']);
         });
     }
 };
