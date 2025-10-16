@@ -8,21 +8,30 @@ use App\Models\Tugas;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class JawabanController extends Controller
 {
     public function index()
     {
-        $jawabans = Jawaban::with([
-            'tugas:id,judul',
-            'siswa:id,nama',
-        ])->get();
+        try {
+            $jawabans = Jawaban::with([
+                'tugas:id,judul',
+                'siswa:id,nama',
+            ])->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'List Data Jawaban',
-            'data' => $jawabans,
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'List Data Jawaban',
+                'data' => $jawabans,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data jawaban',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show($id)
@@ -54,15 +63,13 @@ class JawabanController extends Controller
         }
     }
 
-
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'tugas_id' => 'required|exists:tugas,id',
             'siswa_id' => 'required|exists:siswas,id',
             'isi' => 'nullable|string',
-            'file' => 'nullable|string',
-            'nilai' => 'nullable|integer|min:0|max:100',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -93,17 +100,22 @@ class JawabanController extends Controller
                 }
             }
 
-            $jawaban = Jawaban::create($request->only([
-                'tugas_id',
-                'siswa_id',
-                'isi',
-                'file',
-                'nilai',
-            ]));
+            $filePath = null;
+            if ($request->hasFile('file')) {
+                $filePath = $request->file('file')->store('jawaban', 'public');
+            }
+
+            $jawaban = Jawaban::create([
+                'tugas_id' => $request->tugas_id,
+                'siswa_id' => $request->siswa_id,
+                'isi' => $request->isi,
+                'file' => $filePath,
+                'nilai' => $request->nilai,
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Jawaban berhasil ditambahkan',
+                'message' => 'Jawaban berhasil dikumpulkan',
                 'data' => $jawaban,
             ], 201);
         } catch (\Exception $e) {
@@ -117,58 +129,83 @@ class JawabanController extends Controller
 
     public function update(Request $request, $id)
     {
-        $jawaban = Jawaban::find($id);
+        try {
+            $jawaban = Jawaban::find($id);
 
-        if (!$jawaban) {
+            if (!$jawaban) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jawaban tidak ditemukan',
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'isi' => 'nullable|string',
+                'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:5120',
+                'nilai' => 'nullable|integer|min:0|max:100',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi Gagal',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            if ($request->hasFile('file')) {
+                if ($jawaban->file && Storage::disk('public')->exists($jawaban->file)) {
+                    Storage::disk('public')->delete($jawaban->file);
+                }
+                $jawaban->file = $request->file('file')->store('jawaban', 'public');
+            }
+
+            $jawaban->isi = $request->isi ?? $jawaban->isi;
+            $jawaban->nilai = $request->nilai ?? $jawaban->nilai;
+            $jawaban->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jawaban berhasil diperbarui',
+                'data' => $jawaban,
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Jawaban tidak ditemukan',
-            ], 404);
+                'message' => 'Terjadi kesalahan saat memperbarui jawaban',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $validator = Validator::make($request->all(), [
-            'isi' => 'nullable|string',
-            'file' => 'nullable|string',
-            'nilai' => 'nullable|integer|min:0|max:100',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi Gagal',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $jawaban->update($request->only([
-            'isi',
-            'file',
-            'nilai',
-        ]));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Jawaban berhasil diperbarui',
-            'data' => $jawaban,
-        ], 200);
     }
 
     public function destroy($id)
     {
-        $jawaban = Jawaban::find($id);
+        try {
+            $jawaban = Jawaban::find($id);
 
-        if (!$jawaban) {
+            if (!$jawaban) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jawaban tidak ditemukan',
+                ], 404);
+            }
+
+            if ($jawaban->file && Storage::disk('public')->exists($jawaban->file)) {
+                Storage::disk('public')->delete($jawaban->file);
+            }
+
+            $jawaban->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jawaban berhasil dihapus',
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Jawaban tidak ditemukan',
-            ], 404);
+                'message' => 'Terjadi kesalahan saat menghapus jawaban',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $jawaban->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Jawaban berhasil dihapus',
-        ], 200);
     }
 }
