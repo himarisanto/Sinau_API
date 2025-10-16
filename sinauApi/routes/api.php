@@ -19,6 +19,7 @@ Route::get('/siswa/{id}', [SiswaController::class, 'show']);
 Route::post('/siswa', [SiswaController::class, 'store']);
 Route::post('/siswa/{id}', [SiswaController::class, 'update']);
 Route::delete('/siswa/{id}', [SiswaController::class, 'destroy']);
+Route::get('/siswa/{id}/tugas', [SiswaController::class, 'ambilTugas']);
 
 Route::get('/guru', [GuruController::class, 'index']);
 Route::get('/guru/{id}', [GuruController::class, 'show']);
@@ -26,9 +27,9 @@ Route::post('/guru', [GuruController::class, 'store']);
 Route::put('/guru/{id}', [GuruController::class, 'update']);
 Route::delete('/guru/{id}', [GuruController::class, 'destroy']);
 
-Route::get('/kelas', [KelasController::class, 'index']);      
-Route::get('/kelas/{id}', [KelasController::class, 'show']); 
-Route::post('/kelas', [KelasController::class, 'store']);  
+Route::get('/kelas', [KelasController::class, 'index']);
+Route::get('/kelas/{id}', [KelasController::class, 'show']);
+Route::post('/kelas', [KelasController::class, 'store']);
 Route::put('/kelas/{id}', [KelasController::class, 'update']);
 Route::delete('/kelas/{id}', [KelasController::class, 'destroy']);
 
@@ -39,9 +40,9 @@ Route::put('/matapelajaran/{id}', [MatapelajaranContoller::class, 'update']);
 Route::delete('/matapelajaran/{id}', [MatapelajaranContoller::class, 'destroy']);
 
 Route::prefix('materi')->group(function () {
-    Route::get('/', [MateriController::class, 'index']);        
-    Route::get('/{id}', [MateriController::class, 'show']);      
-    Route::post('/', [MateriController::class, 'store']);        
+    Route::get('/', [MateriController::class, 'index']);
+    Route::get('/{id}', [MateriController::class, 'show']);
+    Route::post('/', [MateriController::class, 'store']);
     Route::put('/{id}', [MateriController::class, 'update']);
     Route::delete('/{id}', [MateriController::class, 'destroy']);
 });
@@ -57,4 +58,3 @@ Route::get('/jawaban/{id}', [JawabanController::class, 'show']);
 Route::post('/jawaban', [JawabanController::class, 'store']);
 Route::put('/jawaban/{id}', [JawabanController::class, 'update']);
 Route::delete('/jawaban/{id}', [JawabanController::class, 'destroy']);
-

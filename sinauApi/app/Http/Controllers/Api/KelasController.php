@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Kelas;
 use App\Models\KelasModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -24,7 +23,7 @@ class KelasController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama_kelas' => 'required|string|max:50|unique:kelas,nama_kelas',
+            'nama_kelas' => 'required|string|max:50|unique:kelas_models,nama_kelas',
         ]);
 
         if ($validator->fails()) {
@@ -75,7 +74,7 @@ class KelasController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nama_kelas' => 'required|string|max:50|unique:kelas,nama_kelas,' . $id,
+            'nama_kelas' => 'required|string|max:50|unique:kelas_models,nama_kelas,' . $id,
         ]);
 
         if ($validator->fails()) {
@@ -100,7 +99,7 @@ class KelasController extends Controller
     public function destroy($id)
     {
         $kelas = KelasModel::withCount('siswas')->find($id);
-        
+
         if (!$kelas) {
             return response()->json([
                 'success' => false,

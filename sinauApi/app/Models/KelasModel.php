@@ -23,6 +23,10 @@ class KelasModel extends Model
     public function gurus(): BelongsToMany
     {
         return $this->belongsToMany(Guru::class, 'guru_kelas', 'kelas_id', 'guru_id')
-                ->withTimestamps();
+            ->withTimestamps();
+    }
+    public function gurusViaForeignKey()
+    {
+        return $this->hasMany(Guru::class, 'kelas_id');
     }
 }

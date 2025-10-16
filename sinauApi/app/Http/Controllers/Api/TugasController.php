@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tugas;
+use App\Models\Guru;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,7 +12,7 @@ class TugasController extends Controller
 {
     public function index()
     {
-        $tugas = Tugas::with(['guru:id,nama', 'kelas:id,nama_kelas'])->get();
+        $tugas = Tugas::all();
 
         return response()->json([
             'success' => true,
@@ -57,6 +58,34 @@ class TugasController extends Controller
         }
 
         try {
+            if ($request->filled('guru_id') && $request->filled('kelas_id')) {
+                $guru = Guru::find($request->guru_id);
+                $kelasId = (int) $request->kelas_id;
+                $teaches = false;
+
+                if ($guru) {
+                    if (isset($guru->kelas_id) && $guru->kelas_id == $kelasId) {
+                        $teaches = true;
+                    }
+
+                    try {
+                        if (method_exists($guru, 'kelas') && $guru->kelas()->getQuery()->from === 'kelas_models') {
+                            if ($guru->kelas()->where('kelas_models.id', $kelasId)->exists()) {
+                                $teaches = true;
+                            }
+                        }
+                    } catch (\Exception $ex) {
+                    }
+                }
+
+                if (!$teaches) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Guru tidak mengajar di kelas yang dipilih',
+                    ], 403);
+                }
+            }
+
             $tugas = Tugas::create($request->only([
                 'judul',
                 'deskripsi',
@@ -113,6 +142,17 @@ class TugasController extends Controller
             'guru_id',
             'kelas_id',
         ]));
+
+        // validate guru-kelas consistency if both present
+        if ($request->filled('guru_id') && $request->filled('kelas_id')) {
+            $guru = Guru::find($request->guru_id);
+            if (!$guru || !$guru->kelas()->where('kelas_models.id', $request->kelas_id)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Guru tidak mengajar di kelas yang dipilih',
+                ], 403);
+            }
+        }
 
         return response()->json([
             'success' => true,

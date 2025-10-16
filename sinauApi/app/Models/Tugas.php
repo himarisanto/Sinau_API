@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tugas extends Model
 {
@@ -29,5 +30,13 @@ class Tugas extends Model
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(KelasModel::class, 'kelas_id');
+    }
+
+    /**
+     * Semua jawaban untuk tugas ini (one tugas -> many jawaban)
+     */
+    public function jawabans(): HasMany
+    {
+        return $this->hasMany(\App\Models\Jawaban::class, 'tugas_id');
     }
 }

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Siswa;
-use App\Models\kelasModel;
+use App\Models\KelasModel;
+use App\Models\Tugas;
+use App\Models\Jawaban;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -78,7 +80,6 @@ class SiswaController extends Controller
                 'message' => 'Data siswa berhasil ditambahkan',
                 'data' => $siswa,
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -103,6 +104,35 @@ class SiswaController extends Controller
             'success' => true,
             'message' => 'Detail Data Siswa',
             'data' => $siswa,
+        ], 200);
+    }
+    public function ambilTugas($id)
+    {
+        $siswa = Siswa::find($id);
+
+        if (!$siswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data siswa tidak ditemukan',
+            ], 404);
+        }
+
+        if (!$siswa->kelas_id) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Siswa belum terdaftar di kelas manapun',
+                'data' => [],
+            ], 200);
+        }
+
+        $tugas = Tugas::where('kelas_id', $siswa->kelas_id)
+            ->where('status', 'aktif')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar tugas untuk kelas siswa',
+            'data' => $tugas,
         ], 200);
     }
 
@@ -140,8 +170,13 @@ class SiswaController extends Controller
 
         try {
             $data = $request->only([
-                'nama', 'nisn', 'no_absen', 'kelas_id', 
-                'jurusan', 'jenis_kelamin', 'tanggal_lahir'
+                'nama',
+                'nisn',
+                'no_absen',
+                'kelas_id',
+                'jurusan',
+                'jenis_kelamin',
+                'tanggal_lahir'
             ]);
 
             if ($request->hasFile('foto')) {
@@ -167,7 +202,6 @@ class SiswaController extends Controller
                 'message' => 'Data siswa berhasil diperbarui',
                 'data' => $siswa,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -193,13 +227,12 @@ class SiswaController extends Controller
                 Storage::delete('public/images/' . $siswa->foto);
             }
             $siswa->gurus()->detach();
-                        $siswa->delete();
+            $siswa->delete();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data siswa berhasil dihapus',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

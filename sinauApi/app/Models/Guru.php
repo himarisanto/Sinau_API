@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -27,10 +28,13 @@ class Guru extends Model
             ->withTimestamps();
     }
 
-    public function kelas(): BelongsToMany
+    /**
+     * Guru belongs to a single kelas via `kelas_id` column.
+     * Keeps compatibility if you later switch to a pivot table.
+     */
+    public function kelas(): BelongsTo
     {
-        return $this->belongsToMany(KelasModel::class, 'guru_kelas', 'guru_id', 'kelas_id')
-            ->withTimestamps();
+        return $this->belongsTo(KelasModel::class, 'kelas_id');
     }
 
     public function siswasMelaluiKelas(): HasManyThrough
