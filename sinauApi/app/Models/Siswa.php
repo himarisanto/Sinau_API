@@ -41,6 +41,11 @@ class Siswa extends Model
             ->withTimestamps();
     }
 
+    public function jurusan(): BelongsTo
+    {
+        return $this->belongsTo(Jurusan::class, 'jurusan_id');
+    }
+
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(KelasModel::class, 'kelas_id');

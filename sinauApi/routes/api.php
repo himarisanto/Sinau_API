@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\SiswaController;
 use App\Http\Controllers\Api\TugasController;
 use App\Http\Controllers\Api\MateriController;
 use App\Http\Controllers\Api\JawabanController;
+use App\Http\Controllers\Api\JurusanController;
 use App\Http\Controllers\Api\MatapelajaranContoller;
 
 Route::get('/user', function (Request $request) {
@@ -20,6 +21,8 @@ Route::post('/siswa', [SiswaController::class, 'store']);
 Route::post('/siswa/{id}', [SiswaController::class, 'update']);
 Route::delete('/siswa/{id}', [SiswaController::class, 'destroy']);
 Route::get('/siswa/{id}/tugas', [SiswaController::class, 'ambilTugas']);
+Route::get('/siswa/kelas/{kelas_id}', [SiswaController::class, 'filterByKelas']);
+
 
 Route::get('/guru', [GuruController::class, 'index']);
 Route::get('/guru/{id}', [GuruController::class, 'show']);
@@ -41,7 +44,7 @@ Route::delete('/matapelajaran/{id}', [MatapelajaranContoller::class, 'destroy'])
 
 Route::prefix('materi')->group(function () {
     Route::get('/', [MateriController::class, 'index']);
-    Route::get('/{id}', [MateriController::class, 'show']);
+    Route::get('/{id}', action: [MateriController::class, 'show']);
     Route::post('/', [MateriController::class, 'store']);
     Route::put('/{id}', [MateriController::class, 'update']);
     Route::delete('/{id}', [MateriController::class, 'destroy']);
@@ -58,3 +61,9 @@ Route::get('/jawaban/{id}', [JawabanController::class, 'show']);
 Route::post('/jawaban', [JawabanController::class, 'store']);
 Route::put('/jawaban/{id}', [JawabanController::class, 'update']);
 Route::delete('/jawaban/{id}', [JawabanController::class, 'destroy']);
+
+Route::get('/jurusan', [JurusanController::class, 'index']);
+Route::get('/jurusan/{id}', [JurusanController::class, 'show']);
+Route::post('/jurusan', [JurusanController::class, 'store']);
+Route::put('/jurusan/{id}', [JurusanController::class, 'update']);
+Route::delete('/jurusan/{id}', [JurusanController::class, 'destroy']);
