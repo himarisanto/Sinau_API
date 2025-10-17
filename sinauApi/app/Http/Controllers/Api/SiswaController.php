@@ -28,6 +28,19 @@ class SiswaController extends Controller
         ], 200);
     }
 
+    public function filterByKelas($kelas_id)
+    {
+        $siswas = Siswa::with(['kelas', 'gurus:id,nama'])
+            ->where('kelas_id', $kelas_id)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'List Data Siswa untuk Kelas ID: ' . $kelas_id,
+            'data' => $siswas,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
