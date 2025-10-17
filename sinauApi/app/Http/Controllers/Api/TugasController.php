@@ -45,6 +45,7 @@ class TugasController extends Controller
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'status' => 'required|string|in:aktif,nonaktif',
+            'deadline' => 'nullable|date',
             'guru_id' => 'nullable|exists:gurus,id',
             'kelas_id' => 'nullable|exists:kelas_models,id',
         ]);
@@ -90,6 +91,7 @@ class TugasController extends Controller
                 'judul',
                 'deskripsi',
                 'status',
+                'deadline',
                 'guru_id',
                 'kelas_id',
             ]));
@@ -125,6 +127,7 @@ class TugasController extends Controller
             'status' => 'required|string|in:aktif,nonaktif',
             'guru_id' => 'nullable|exists:gurus,id',
             'kelas_id' => 'nullable|exists:kelas_models,id',
+            'deadline' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -139,6 +142,7 @@ class TugasController extends Controller
             'judul',
             'deskripsi',
             'status',
+            'deadline',
             'guru_id',
             'kelas_id',
         ]));

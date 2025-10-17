@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Guru;
 use App\Models\Siswa;
+use App\Models\Jawaban;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -154,6 +155,51 @@ class GuruController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data guru berhasil dihapus',
+        ], 200);
+    }
+    public function nilaiTugasSiswa(Request $request, $guruId)
+    {
+        $validator = Validator::make($request->all(), [
+            'tugasId' => 'required|exists:tugas,id',
+            'jawabanId' => 'required|exists:jawabans,id',
+            'nilai' => 'required|integer|min:0|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $guru = Guru::find($guruId);
+        if (!$guru || !$guru->siswas()->where('siswas.id', $request->input('siswaId'))->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Guru tidak mengajar siswa ini',
+            ], 403);
+        }
+
+        $jawaban = Jawaban::where('siswa_id', $request->input('siswaId'))
+            ->whereHas('tugas', function ($query) use ($request) {
+                $query->where('id', $request->input('tugasId'));
+            })->first();
+
+        if (!$jawaban) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jawaban tugas tidak ditemukan',
+            ], 404);
+        }
+
+        $jawaban->nilai = $request->input('nilai');
+        $jawaban->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nilai tugas berhasil diperbarui',
+            'data' => $jawaban,
         ], 200);
     }
 }

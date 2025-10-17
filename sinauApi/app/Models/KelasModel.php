@@ -34,4 +34,9 @@ class KelasModel extends Model
     {
         return $this->hasMany(Guru::class, 'kelas_id');
     }
+
+    public function jurusans(): HasMany
+    {
+        return $this->hasMany(Jurusan::class, 'kelas_id', 'nama_kelas');
+    }
 }

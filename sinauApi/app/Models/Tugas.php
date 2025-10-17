@@ -13,11 +13,13 @@ class Tugas extends Model
 
     // match the migration table name
     protected $table = 'tugas';
+    
 
     protected $fillable = [
         'judul',
         'deskripsi',
         'status',
+        'deadline',
         'guru_id',
         'kelas_id',
     ];
@@ -37,6 +39,6 @@ class Tugas extends Model
      */
     public function jawabans(): HasMany
     {
-        return $this->hasMany(\App\Models\Jawaban::class, 'tugas_id');
+        return $this->hasMany(Jawaban::class, 'tugas_id');
     }
 }

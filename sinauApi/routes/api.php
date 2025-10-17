@@ -29,6 +29,7 @@ Route::get('/guru/{id}', [GuruController::class, 'show']);
 Route::post('/guru', [GuruController::class, 'store']);
 Route::put('/guru/{id}', [GuruController::class, 'update']);
 Route::delete('/guru/{id}', [GuruController::class, 'destroy']);
+Route::post('/guru/{guruId}/nilai-tugas', [GuruController::class, 'nilaiTugasSiswa']);
 
 Route::get('/kelas', [KelasController::class, 'index']);
 Route::get('/kelas/{id}', [KelasController::class, 'show']);

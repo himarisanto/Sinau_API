@@ -35,4 +35,9 @@ class Jawaban extends Model
     {
         return $this->belongsTo(Siswa::class, 'siswa_id');
     }
+
+    public function kelas() : BelongsTo
+    {
+        return $this->tugas->kelas();
+    }
 }

@@ -21,7 +21,7 @@ class MatapelajaranContoller extends Controller
         ], 200);
     }
 
-    public function show() 
+    public function show()
     {
         $id = request()->route('id') ?? request('id');
         if (! $id) {

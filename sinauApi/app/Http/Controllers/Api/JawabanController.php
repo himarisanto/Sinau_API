@@ -16,9 +16,22 @@ class JawabanController extends Controller
     {
         try {
             $jawabans = Jawaban::with([
-                'tugas:id,judul',
-                'siswa:id,nama',
-            ])->get();
+                'tugas:id,judul,deadline',
+                'siswa:id,nama,kelas_id',
+                'siswa.kelas:id,nama_kelas'
+            ])->get()->map(function ($jawaban) {
+                $status = 'Tepat waktu';
+
+                if ($jawaban->tugas && $jawaban->tugas->deadline !== null) {
+                    if ($jawaban->created_at->greaterThan($jawaban->tugas->deadline)) {
+                        $status = 'Terlambat';
+                    }
+                }
+                unset($jawaban->tugas_id, $jawaban->siswa_id);
+                $jawaban->status = $status;
+
+                return $jawaban;
+            });
 
             return response()->json([
                 'success' => true,
@@ -69,7 +82,7 @@ class JawabanController extends Controller
             'tugas_id' => 'required|exists:tugas,id',
             'siswa_id' => 'required|exists:siswas,id',
             'isi' => 'nullable|string',
-            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:5120',
+            'file' => 'nullable|file|max:5120', 
         ]);
 
         if ($validator->fails()) {
@@ -81,23 +94,44 @@ class JawabanController extends Controller
         }
 
         try {
+            $existing = Jawaban::where('tugas_id', $request->tugas_id)
+                ->where('siswa_id', $request->siswa_id)
+                ->first();
+
+            if ($existing) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Siswa sudah mengumpulkan jawaban untuk tugas ini.',
+                    'data' => $existing,
+                ], 409); 
+            }
             $tugas = Tugas::find($request->tugas_id);
             $siswa = Siswa::find($request->siswa_id);
 
-            if ($tugas && $siswa) {
-                if ($tugas->kelas_id !== null && $tugas->kelas_id != $siswa->kelas_id) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Siswa tidak diperbolehkan mengerjakan tugas di luar kelasnya',
-                    ], 403);
-                }
+            if (!$tugas || !$siswa) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tugas atau siswa tidak ditemukan',
+                ], 404);
+            }
 
-                if (isset($tugas->status) && $tugas->status !== 'aktif') {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Tugas tidak aktif sehingga tidak dapat dikerjakan',
-                    ], 403);
-                }
+            if ($tugas->status !== 'aktif') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tugas tidak aktif sehingga tidak dapat dikerjakan',
+                ], 403);
+            }
+
+            if ($tugas->kelas_id !== null && $tugas->kelas_id != $siswa->kelas_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Siswa tidak diperbolehkan mengerjakan tugas di luar kelasnya',
+                ], 403);
+            }
+
+            $terlambat = false;
+            if ($tugas->deadline !== null && now()->greaterThan($tugas->deadline)) {
+                $terlambat = true; 
             }
 
             $filePath = null;
@@ -113,11 +147,22 @@ class JawabanController extends Controller
                 'nilai' => $request->nilai,
             ]);
 
+            if ($terlambat) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tugas berhasil dikumpulkan, tetapi melewati deadline',
+                    'data' => $jawaban,
+                    'status' => 'Terlambat kumpul tugas',
+                ], 200);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Jawaban berhasil dikumpulkan',
+                'message' => 'Tugas berhasil dikumpulkan tepat waktu',
                 'data' => $jawaban,
+                'status' => 'Kumpul tugas tepat waktu',
             ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
