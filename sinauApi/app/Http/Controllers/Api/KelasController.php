@@ -12,7 +12,7 @@ class KelasController extends Controller
     public function index()
     {
         try {
-            $kelas = KelasModel::withCount('siswas')->get();
+            $kelas = KelasModel::with('siswas')->get();
 
             return response()->json([
                 'success' => true,
