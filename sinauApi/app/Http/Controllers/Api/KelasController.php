@@ -11,19 +11,28 @@ class KelasController extends Controller
 {
     public function index()
     {
-        $kelas = KelasModel::withCount('siswas')->get();
+        try {
+            $kelas = KelasModel::withCount('siswas')->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data kelas berhasil diambil',
-            'data' => $kelas,
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data kelas berhasil diambil',
+                'data' => $kelas,
+            ], 200);
+        }catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data kelas',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'nama_kelas' => 'required|string|max:50|unique:kelas_models,nama_kelas',
+            'jurusan_id' => 'required|exists:jurusans,id',
         ]);
 
         if ($validator->fails()) {
@@ -36,6 +45,7 @@ class KelasController extends Controller
 
         $kelas = KelasModel::create([
             'nama_kelas' => $request->nama_kelas,
+            'jurusan_id' => $request->jurusan_id,
         ]);
 
         return response()->json([
@@ -75,6 +85,7 @@ class KelasController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama_kelas' => 'required|string|max:50|unique:kelas_models,nama_kelas,' . $id,
+            'jurusan_id' => 'required|exists:jurusans,id',
         ]);
 
         if ($validator->fails()) {
@@ -87,6 +98,7 @@ class KelasController extends Controller
 
         $kelas->update([
             'nama_kelas' => $request->nama_kelas,
+            'jurusan_id' => $request->jurusan_id,
         ]);
 
         return response()->json([

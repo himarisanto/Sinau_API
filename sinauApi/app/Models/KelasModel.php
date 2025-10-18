@@ -13,7 +13,7 @@ class KelasModel extends Model
 
     protected $table = 'kelas_models';
 
-    protected $fillable = ['nama_kelas'];
+    protected $fillable = ['nama_kelas', 'jurusan_id'];
 
     public function siswas(): HasMany
     {

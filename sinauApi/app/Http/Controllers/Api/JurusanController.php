@@ -10,28 +10,27 @@ use Illuminate\Support\Facades\Validator;
 class JurusanController extends Controller
 {
 
-    // untuk response jsonnya di ubah pake bahasa indonesia 
     public function index()
     {
+
         try {
-            // $jurusans = Jurusan::with('kelas', 'siswa')->get();
-            $jurusans = Jurusan::all();
-        
+            // $jurusans = Jurusan::with('kelas', 'siswa')->get();\
+            $jurusans= Jurusan::all();
             return response()->json([
                 'success' => true,
                 'message' => 'Sukses tampilkan data jurusan',
                 'data' => $jurusans
             ], 200);
-
         }catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Gagal tampilkan data jurusan',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function show($id) 
+    public function show($id)
     {
         try {
             $jurusan = Jurusan::with('kelas', 'siswa')->findOrFail($id);
@@ -68,8 +67,6 @@ class JurusanController extends Controller
             $jurusan = Jurusan::create([
                 'nama_jurusan' => $request->input('nama_jurusan'),
             ]);
-
-
             return response()->json([
                 'success' => true,
                 'message' => 'Sukses menambahkan data jurusan',
