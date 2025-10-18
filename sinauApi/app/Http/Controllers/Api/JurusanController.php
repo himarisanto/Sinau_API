@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 class JurusanController extends Controller
 {
+
+    // untuk response jsonnya di ubah pake bahasa indonesia 
     public function index()
     {
         try {
@@ -17,13 +19,13 @@ class JurusanController extends Controller
         
             return response()->json([
                 'success' => true,
-                'message' => 'Successfully retrieved jurusan data',
+                'message' => 'Sukses tampilkan data jurusan',
                 'data' => $jurusans
             ], 200);
 
         }catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve jurusan data',
+                'message' => 'Gagal tampilkan data jurusan',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -36,13 +38,13 @@ class JurusanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Successfully retrieved jurusan data',
+                'message' => 'Sukses tampilkan data jurusan',
                 'data' => $jurusan
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve jurusan data',
+                'message' => 'Gagal tampilkan data jurusan',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -57,7 +59,7 @@ class JurusanController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation Failed',
+                'message' => 'Validasi gagal',
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -70,13 +72,13 @@ class JurusanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Successfully created jurusan',
+                'message' => 'Sukses menambahkan data jurusan',
                 'data' => $jurusan
             ], 201);
         }catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create jurusan',
+                'message' => 'Gagal tambahkan data ke jurusan',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -90,7 +92,7 @@ class JurusanController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation Failed',
+                'message' => 'validasi gagal',
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -102,13 +104,13 @@ class JurusanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Successfully updated jurusan',
+                'message' => 'Data Jurusan berhasil di perbarui',
                 'data' => $jurusan
             ], 200);
         }catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update jurusan',
+                'message' => 'Gagal perbarui data jurusan',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -121,12 +123,12 @@ class JurusanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Successfully deleted jurusan'
+                'message' => 'Sukses hapus data juruan'
             ], 200);
         }catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete jurusan',
+                'message' => 'Gagal hapus data jurusan',
                 'error' => $e->getMessage()
             ], 500);
         }
