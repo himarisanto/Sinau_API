@@ -48,7 +48,7 @@ class SiswaController extends Controller
             'nisn' => 'required|string|unique:siswas,nisn',
             'no_absen' => 'required|string|max:10',
             'kelas_id' => 'required|exists:kelas_models,id',
-            'jurusan' => 'required|string|max:255',
+            'jurusan_id' => 'required|exists:jurusans,id',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'required|date',
@@ -65,6 +65,27 @@ class SiswaController extends Controller
         }
 
         try {
+
+            $kelas = KelasModel::with('jurusan')->find($request->kelas_id);
+
+            if (!$kelas) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kelas tidak ditemukan',
+                ], 404);
+            }
+
+            if ($kelas->jurusan_id !== $request->jurusan_id ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kelas tidak sesuai dengan jurusan',
+                    'data' => [
+                        'kelas' => $kelas,
+                        'jurusan' => $request->jurusan_id,
+                    ],
+                ], 400);
+            }
+
             $fotoName = null;
             if ($request->hasFile('foto')) {
                 $fotoName = time() . '_' . $request->file('foto')->getClientOriginalName();
@@ -76,7 +97,7 @@ class SiswaController extends Controller
                 'nisn' => $request->nisn,
                 'no_absen' => $request->no_absen,
                 'kelas_id' => $request->kelas_id,
-                'jurusan' => $request->jurusan,
+                'jurusan_id' => $request->jurusan_id,
                 'foto' => $fotoName,
                 'jenis_kelamin' => $request->jenis_kelamin,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -165,7 +186,7 @@ class SiswaController extends Controller
             'nisn' => 'sometimes|required|string|unique:siswas,nisn,' . $id,
             'no_absen' => 'sometimes|required|string|max:10',
             'kelas_id' => 'required|exists:kelas_models,id',
-            'jurusan' => 'sometimes|required|string|max:255',
+            'jurusan_id' => 'sometimes|required|exists:jurusans,id',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'jenis_kelamin' => 'sometimes|required|in:L,P',
             'tanggal_lahir' => 'sometimes|required|date',
@@ -187,7 +208,7 @@ class SiswaController extends Controller
                 'nisn',
                 'no_absen',
                 'kelas_id',
-                'jurusan',
+                'jurusan_id',
                 'jenis_kelamin',
                 'tanggal_lahir'
             ]);

@@ -21,7 +21,7 @@ class Siswa extends Model
         'nisn',
         'no_absen',
         'kelas_id',
-        'jurusan',
+        'jurusan_id',
         'foto',
         'tanggal_lahir',
         'jenis_kelamin',
@@ -40,7 +40,7 @@ class Siswa extends Model
         return $this->belongsToMany(Guru::class, 'guru_siswa', 'siswa_id', 'guru_id')
             ->withTimestamps();
     }
-    
+
     public function jurusan(): BelongsTo
     {
         return $this->belongsTo(Jurusan::class, 'jurusan_id');

@@ -16,6 +16,8 @@ class JurusanController extends Controller
         try {
             // $jurusans = Jurusan::with('kelas', 'siswa')->get();\
             $jurusans= Jurusan::all();
+            dd($jurusans); 
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Sukses tampilkan data jurusan',
